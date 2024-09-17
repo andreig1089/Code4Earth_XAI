@@ -1,0 +1,51 @@
+# this Python package contains a cli that will perturb a specified grib file using the specified function
+# the grib file must be in a Gaussian Reduced grid
+
+# install the conda env
+conda env create -f aifs_grib_perturbations/xai-code4earth.yml
+
+# perturb the initial conditions for AIFS
+# usage:
+    python3 perturbations_aifs.py --help
+
+    positional arguments:
+      {perturbation_by_factor,perturbation_phase,regional_perturbation,location_perturbation,perturbation_of_variable,perturbation_by_polygons}
+                            sub-command help
+        perturbation_by_factor
+                            variable and level will be perturbed by the specified factor
+        perturbation_by_list
+                            grib file will be perturbed using the perturbation dict that includes the variable, level and perturbation factor
+        perturbation_phase  perturb the grib file phases
+        regional_perturbation
+                            regionally perturb variable and level in the specified coordinates
+        location_perturbation
+                            perturb variable and level in the specified location
+        perturbation_of_variable
+                            perturb variable and level using multiplication and addition terms
+        perturbation_by_polygons
+                            perturb variable and level within specified polygons
+
+    options:
+      -h, --help            show this help message and exit
+      --version             show program's version number and exit
+
+    Example usage:
+      - with config file:
+        python3 perturbations_aifs.py perturbation_by_factor --grib-file ./grib_files/20240302_orig_init.grb --config '/path/to/config.txt'
+      - without config file:
+        python3 perturbations_aifs.py perturbation_by_list --grib_file ./grib_files/experiments_grib_files/20240302_orig_init.grb --perturbation_json '{"u": {"300": "0.8"}, "v": {"300": "1.3"}}' --output_grib_file ./grib_files/experiments_grib_files/20240302_pert_carlota_2.grb
+      - can be used as a combination of the 2, keep in mind that the values from the args will overwrite the ones in the config file
+
+# second we need to run the predictions for both the init file and the perturbed file
+# prerequisites: a 'checkpoint.ckpt' file in the transformer_checkpoint dir
+# navigate to project root file
+
+conda activate xai-code4earth
+
+init_grib_filename="20240302_perturbed_factor_msl_2c49c7af"
+ai-models aifs --assets ../transformer_checkpoint --file ./grib_files/experiments_grib_files/${init_grib_filename}.grb --time 0000 --lead-time 240
+mv aifs.grib ./grib_files/experiments_grib_files/${init_grib_filename}_240h_pred.grb
+
+perturbed_grib_filename="20240302_perturbed_factor_msl_2c49c7af"
+ai-models aifs --assets ../transformer_checkpoint --file ./grib_files/experiments_grib_files/${perturbed_grib_filename}.grb --time 0000 --lead-time 240
+mv aifs.grib ./grib_files/experiments_grib_files/${perturbed_grib_filename}_240h_pred.grb

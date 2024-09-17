@@ -1,0 +1,7 @@
+{
+    "input_grib": "/home/user/large-disk/aifs_grib_perturbations/grib_files/experiments_grib_files/20240302_pert_mode_PE_plus_240h_pred.grb",
+    "variable": "msl",
+    "level": 0,
+    "zadd": 1,
+    "zmul": 1
+}
